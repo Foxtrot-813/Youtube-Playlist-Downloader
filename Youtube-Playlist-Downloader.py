@@ -1,7 +1,7 @@
 import os
 from pytube import Playlist
 
-
+lst = ['~', '<', '>', ':', '"', '/', "\\", '|', '?', '*', '.', "'", ',']
 url = input("Playlist link:\n")
 choice = int(input("Please choose one of the options:\n1-Audio\n2-Video\n3-Quit\n"))
 playlist = Playlist(url)
@@ -11,10 +11,14 @@ if choice == 3:
 
 def get_audio():
     print(f'Downloading: {playlist.title} which has {len(playlist.video_urls)} videos in.')
+
     for audio in playlist.videos:
         try:
             print(f"Downloading {audio.title}")
             audio.streams.filter(only_audio=True).get_by_itag(140).download()
+            for i in lst:
+                audio.title = audio.title.replace(i, '')
+
             os.rename(f"{audio.title}.mp4", f"{audio.title}.mp3")
         except AttributeError:
             print('Attribute error.')
