@@ -2,7 +2,6 @@ import os
 import re
 from pytube import Playlist
 
-lst = ['~', '<', '>', ':', '"', '/', "\\", '|', '?', '*', '.', "'", ',']
 url = input("Playlist link:\n")
 choice = int(input("Please choose one of the options:\n1-Audio\n2-Video\n3-Quit\n"))
 playlist = Playlist(url)
@@ -19,11 +18,9 @@ def get_audio():
             audio.streams.filter(only_audio=True).get_by_itag(140).download()
 
             def rename(title):
-                name = re.sub('[\\\~<>:"\'/?*.]', '', title)
+                name = re.sub('[~<>:;"\'/?*.,|\\\\]', '', title)
                 return name
 
-            for i in lst:
-                audio.title = audio.title.replace(i, '')
             os.rename(f"{rename(audio.title)}.mp4", f"{rename(audio.title)}.mp3")
         except AttributeError:
             print('Attribute error.')
