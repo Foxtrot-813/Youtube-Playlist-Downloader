@@ -17,7 +17,7 @@ elif opt == 2:
 
 
 def rename(title):
-    name = re.sub('[~<>:;"#\'/?*.,|\\\\]', '', title)
+    name = re.sub(r'[\\~<>:;"#\'/?*.,|\\\\]+', '', title)
     return name
 
 
