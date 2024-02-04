@@ -2,77 +2,118 @@ import os
 import re
 from pytube import Playlist, YouTube
 
-opt = int(input("Please choose an option:\n1-Download a playlist.\n2-Download only one video.\n3-Exit\n> "))
-choice = int(input("Please choose an option:\n1-Audio\n2-Video\n3-Quit\n> "))
-url = None
-playlist = None
 
-if opt == 3 or choice == 3:
-    exit(1)
-elif opt == 1:
-    url = input("Playlist link: ")
-    playlist = Playlist(url)
-elif opt == 2:
-    url = input("YouTube link: ")
+def check_option():
+    opt = 0
+    while True:
+        try:
+            opt = int(
+                input(
+                    "Please choose an option:\n1-Download a playlist.\n2-Download only one video.\n3-Exit\n> "
+                )
+            )
+            if opt in [1, 2, 3]:
+                break
+            else:
+                print("Invalid option. Please enter 1, 2 or 3.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+    if opt == 3:
+        exit(1)
+    return opt
+
+
+def get_choice():
+    choice = 0
+    while True:
+        try:
+            choice = int(
+                input("Please choose an option:\n1-Audio\n2-Video\n3-Quit\n> ")
+            )
+            if choice in [1, 2, 3]:
+                break
+            else:
+                print("Invalid choice. Please enter 1, 2 or 3.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+    return choice
 
 
 def rename(title):
-    name = re.sub(r'[\\~<>:;"#\'/?*.,|\\\\]+', '', title)
+    name = re.sub(r'[\/~<>:"#\'/?*.|,\\\\]+', "", title)
     return name
 
 
-def get_single_audio_file():
+def download_single_audio(url):
     audio = YouTube(url)
     try:
         print(f"Downloading {audio.title}")
         audio.streams.filter(only_audio=True).get_by_itag(140).download()
-        os.rename(f"{rename(audio.title)}.mp4", f"{rename(audio.title)}.mp3")
-    except AttributeError:
-        print('Attribute error.')
+        name = rename(audio.title)
+        print(f"Saved as {name}.mp3")
+        os.rename(f"{name}.mp4", f"{name}.mp3")
+    except Exception as e:
+        print(f"Download failed: {e}")
 
 
-def get_single_video_file():
+def download_single_video(url):
     video = YouTube(url)
     print(f"Downloading {video.title}")
     try:
-        video.streams.filter(file_extension='mp4')
-        print(f"Downloading {video.title}")
         video.streams.get_highest_resolution().download()
-    except AttributeError:
-        print('Attribute error.')
+        name = rename(video.title)
+        print(f"Saved as {name}.mp4")
+    except Exception as e:
+        print(f"Download failed: {e}")
 
 
-def get_audio_playlist():
-    print(f'Downloading: {playlist.title} which has {len(playlist.video_urls)} videos in.')
-
+def download_audio_playlist(playlist):
+    print(
+        f"Downloading: {playlist.title} which has {len(playlist.video_urls)} videos in."
+    )
     for audio in playlist.videos:
         try:
             print(f"Downloading {audio.title}")
             audio.streams.filter(only_audio=True).get_by_itag(140).download()
-            os.rename(f"{rename(audio.title)}.mp4", f"{rename(audio.title)}.mp3")
-        except AttributeError:
-            print('Attribute error.')
+            name = rename(audio.title)
+            print(f"Saved as {name}.mp3")
+            os.rename(f"{name}.mp4", f"{name}.mp3")
+        except Exception as e:
+            print(f"Download failed for {audio.title}: {e}")
 
 
-def get_video_playlist():
-    print(f'Downloading: {playlist.title} which has {len(playlist.video_urls)} videos in.')
+def download_video_playlist(playlist):
+    print(
+        f"Downloading: {playlist.title} which has {len(playlist.video_urls)} videos in."
+    )
     for video in playlist.videos:
         try:
-            video.streams.filter(file_extension='mp4')
-            print(f"Downloading {video.title}")
             video.streams.get_highest_resolution().download()
-        except AttributeError:
-            print('Attribute error.')
+            name = rename(video.title)
+            print(f"Saved as {name}.mp4")
+        except Exception as e:
+            print(f"Download failed for {video.title}: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
+    opt = check_option()
+    if opt == 1:
+        url = input("Playlist link: ")
+        playlist = Playlist(url)
+    elif opt == 2:
+        url = input("YouTube link: ")
+
+    choice = get_choice()
+
     if opt == 1 and choice == 1:
-        get_audio_playlist()
+        download_audio_playlist(playlist)
     elif opt == 1 and choice == 2:
-        get_video_playlist()
+        download_video_playlist(playlist)
     elif opt == 2 and choice == 1:
-        get_single_audio_file()
+        download_single_audio(url)
     elif opt == 2 and choice == 2:
-        get_single_video_file()
-    else:
-        print("Invalid choice.")
+        download_single_video(url)
+
+print("Done!")
+input("Press any key to exit.")
